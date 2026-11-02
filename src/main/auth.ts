@@ -3,16 +3,37 @@
 import { app, powerMonitor, safeStorage } from 'electron'
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
+import {
+  createClient,
+  type AuthError,
+  type Session,
+  type SupabaseClient
+} from '@supabase/supabase-js'
 import type { AuthState } from '../shared/api'
 import type { Database } from '../shared/database.types'
 
 const SUPABASE_URL = import.meta.env.MAIN_VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.MAIN_VITE_SUPABASE_PUBLISHABLE_KEY
 
-// Sign-in is by email link only for now. The link comes back here, so this must be in
-// Supabase's allowed redirect URLs (Authentication > URL configuration).
+// Sign-in is by email only for now: the email carries a code to type into the app. Its link
+// also works once this URL is in Supabase's allowed redirect URLs (Authentication > URL
+// configuration); until then the link lands on the Site URL and uses up the code.
 export const AUTH_CALLBACK = 'whyspace://auth/callback'
+
+// Supabase's built-in mailer is for testing: a few emails an hour, and only to people on
+// the Supabase team. Say so plainly instead of showing the raw error.
+const AUTH_ERRORS: Record<string, string> = {
+  over_email_send_rate_limit:
+    'Supabase only sends a few sign-in emails an hour. Wait a while, or use the code you already have.',
+  email_address_not_authorized:
+    "Supabase's test mailer only sends to people on the Supabase team. Use an address on the team.",
+  otp_expired: 'That code has expired or was already used. Send a new one.'
+}
+
+function describe(error: AuthError): string {
+  const known = error.code ? AUTH_ERRORS[error.code] : undefined
+  return known ? `${known} (${error.code})` : error.message
+}
 
 // supabase-js keeps the session and the sign-in verifier here: one file in userData,
 // encrypted with the macOS Keychain (or the OS equivalent) when it's available.
@@ -123,20 +144,35 @@ export function startAuth(onChange: (state: AuthState, session: Session | null) 
   })
 }
 
+// Runs a Supabase auth call. On failure it shows the error and keeps the code field open
+// for `emailSentTo`, so a typo doesn't mean sending another email.
 async function run(
-  action: (db: SupabaseClient<Database>) => Promise<{ error: Error | null }>
+  action: (db: SupabaseClient<Database>) => Promise<{ error: AuthError | null }>,
+  emailSentTo?: string
 ): Promise<boolean> {
   if (!client) return false
   const { error } = await action(client)
-  if (error) signedOut(error.message)
+  if (error) signedOut(describe(error), emailSentTo)
   return !error
 }
 
-export async function sendEmailLink(email: string): Promise<void> {
-  const sent = await run((db) =>
-    db.auth.signInWithOtp({ email, options: { emailRedirectTo: AUTH_CALLBACK } })
+function pendingEmail(): string | undefined {
+  return state.status === 'signed_out' ? state.emailSentTo : undefined
+}
+
+// The first email to a new address also creates the account.
+export async function sendSignInEmail(email: string): Promise<void> {
+  const sent = await run(
+    (db) => db.auth.signInWithOtp({ email, options: { emailRedirectTo: AUTH_CALLBACK } }),
+    pendingEmail()
   )
   if (sent) signedOut(undefined, email)
+}
+
+export async function verifyEmailCode(code: string): Promise<void> {
+  const email = pendingEmail()
+  if (!email) return signedOut('Send yourself a code first.')
+  await run((db) => db.auth.verifyOtp({ email, token: code.trim(), type: 'email' }), email)
 }
 
 // Handles whyspace://auth/callback?code=… from the email link.

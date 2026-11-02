@@ -42,7 +42,8 @@ export type WhyspaceLink =
 // Calls a window can make. The main process answers each one.
 export interface Invokes {
   'auth:state': () => AuthState
-  'auth:email-link': (email: string) => void
+  'auth:send-email': (email: string) => void
+  'auth:verify-code': (code: string) => void
   'auth:sign-out': () => void
   'sync:snapshot': () => Snapshot
   'sync:status': () => SyncStatus
@@ -60,7 +61,8 @@ export interface Events {
 // The preload only forwards channels on this list.
 export const INVOKE_CHANNELS = [
   'auth:state',
-  'auth:email-link',
+  'auth:send-email',
+  'auth:verify-code',
   'auth:sign-out',
   'sync:snapshot',
   'sync:status',

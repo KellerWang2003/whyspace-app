@@ -19,16 +19,20 @@ function SignIn({
   auth: Extract<AuthState, { status: 'signed_out' }>
 }): React.JSX.Element {
   const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
+  const run = async (action: () => Promise<void>): Promise<void> => {
+    setBusy(true)
+    await action()
+    setBusy(false)
+  }
   return (
     <section className="box">
       <h2>Sign in</h2>
       <form
-        onSubmit={async (e) => {
+        onSubmit={(e) => {
           e.preventDefault()
-          setBusy(true)
-          await api.invoke('auth:email-link', email)
-          setBusy(false)
+          run(() => api.invoke('auth:send-email', email))
         }}
       >
         <input
@@ -38,13 +42,29 @@ function SignIn({
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <button disabled={busy}>Email me a sign-in link</button>
+        <button disabled={busy}>{auth.emailSentTo ? 'Send a new code' : 'Email me a code'}</button>
       </form>
       {auth.emailSentTo && (
-        <p>
-          Sent to {auth.emailSentTo}. Open the link on this Mac and it signs you in here. The first
-          link also creates your account.
-        </p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            run(() => api.invoke('auth:verify-code', code))
+          }}
+        >
+          <p>
+            Sent to {auth.emailSentTo}. Type the code from the email here; don&apos;t click its
+            link. The first code also creates your account.
+          </p>
+          <input
+            placeholder="Code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            autoFocus
+          />
+          <button disabled={busy || !code.trim()}>Sign in</button>
+        </form>
       )}
       {auth.error && <p className="error">{auth.error}</p>}
     </section>

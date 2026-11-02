@@ -21,7 +21,8 @@ Only one copy runs at a time. To run a second checkout beside it, give it its ow
 - The Supabase session lives in the main process (`src/main/auth.ts`), saved in userData and encrypted with the Keychain. Windows never hold tokens.
 - Windows talk to main through one typed API, `window.whyspace` (`src/shared/api.ts`): `invoke` for calls, `on` for pushes. Every window gets the same pushes.
 - `src/main/sync.ts` loads the tables in `src/shared/tables.ts` and keeps them live with Supabase Realtime.
-- Sign-in is by email link only for now (no Google). The link comes back as `whyspace://auth/callback`, which must be listed under Authentication > URL configuration > Redirect URLs in Supabase. Tables only stream live once they're in the `supabase_realtime` publication.
+- Sign-in is by email only for now (no Google): the app emails a code and you type it in. That needs `{{ .Token }}` in Supabase's Confirm signup and Magic link email templates. The email's link also works if `whyspace://auth/callback` is added under Authentication > URL configuration > Redirect URLs; until then, use the code. Supabase's built-in mailer only sends a few emails an hour, and only to people on the Supabase team.
+- Tables only stream live once they're in the `supabase_realtime` publication.
 - `whyspace://project/<id>` and `whyspace://decision/<id>` open the app and are passed to the window as `link:opened`.
 
 ## What changed from the lab
