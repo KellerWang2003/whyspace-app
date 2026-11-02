@@ -4,6 +4,12 @@ import { listenForLinks } from './links'
 import { openLink, startShell } from './shell'
 import { openDebugWindow } from './debug-window'
 
+// Dev: WHYSPACE_PROFILE=<name> gives this copy its own userData (and sign-in), so a second
+// checkout can run beside it instead of being stopped by the single-instance lock.
+if (process.env['WHYSPACE_PROFILE']) {
+  app.setPath('userData', `${app.getPath('userData')}-${process.env['WHYSPACE_PROFILE']}`)
+}
+
 // Only one copy runs; a second launch (or a whyspace:// link) is handed to it.
 const isPrimary = listenForLinks(openLink)
 

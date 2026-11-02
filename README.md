@@ -14,6 +14,8 @@ npm run dev
 
 The app lives in the menu bar (tray) and opens a plain debug window: sign in, sync status, and the raw rows you can see.
 
+Only one copy runs at a time. To run a second checkout beside it, give it its own profile: `WHYSPACE_PROFILE=pill npm run dev` (it gets its own userData and sign-in).
+
 ## Sign-in and sync
 
 - The Supabase session lives in the main process (`src/main/auth.ts`), saved in userData and encrypted with the Keychain. Windows never hold tokens.
