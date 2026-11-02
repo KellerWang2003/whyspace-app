@@ -2,7 +2,7 @@
 // Not a designed screen; it exists to prove the plumbing works.
 import { useEffect, useState } from 'react'
 import type { AuthState, Row, Snapshot, SyncStatus, WhyspaceLink } from '../../shared/api'
-import { SYNC_TABLES } from '../../shared/tables'
+import { SYNC_TABLES, SYNC_TABLE_NAMES, type SyncTable } from '../../shared/tables'
 import './assets/debug.css'
 
 const api = window.whyspace
@@ -70,18 +70,24 @@ function TableView({
   name,
   rows,
   error,
-  changedId
+  changed
 }: {
-  name: string
+  name: SyncTable
   rows: Row[]
   error?: string
-  changedId?: unknown
+  changed?: Row
 }): React.JSX.Element {
+  const { key, live } = SYNC_TABLES[name]
   const columns = [...new Set(rows.slice(0, 50).flatMap((r) => Object.keys(r)))]
+  const rowKey = (r: Row): string => key.map((k) => cell(r[k])).join(':')
   return (
     <section className="box">
       <h3>
-        {name} <span className="muted">{error ? '' : `${rows.length} rows`}</span>
+        {name}{' '}
+        <span className="muted">
+          {error ? '' : `${rows.length} rows · `}
+          {live ? 'live' : 'refreshes on reload'}
+        </span>
       </h3>
       {error ? (
         <p className="error">{error}</p>
@@ -98,10 +104,10 @@ function TableView({
               </tr>
             </thead>
             <tbody>
-              {rows.slice(0, 50).map((r, i) => (
+              {rows.slice(0, 50).map((r) => (
                 <tr
-                  key={cell(r.id) || i}
-                  className={changedId !== undefined && r.id === changedId ? 'fresh' : ''}
+                  key={rowKey(r)}
+                  className={changed && rowKey(changed) === rowKey(r) ? 'fresh' : ''}
                 >
                   {columns.map((c) => (
                     <td key={c} title={cell(r[c])}>
@@ -171,13 +177,13 @@ export default function Debug(): React.JSX.Element {
               ? `Last change: ${last.event} on ${last.table} at ${new Date(last.at).toLocaleTimeString()}`
               : 'No live changes yet.'}
           </p>
-          {SYNC_TABLES.map((t) => (
+          {SYNC_TABLE_NAMES.map((t) => (
             <TableView
               key={t}
               name={t}
               rows={snapshot[t]?.rows ?? []}
               error={snapshot[t]?.error}
-              changedId={last?.table === t ? last.row.id : undefined}
+              changed={last?.table === t ? last.row : undefined}
             />
           ))}
         </>

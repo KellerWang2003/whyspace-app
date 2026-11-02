@@ -6,7 +6,7 @@ import type {
   SupabaseClient
 } from '@supabase/supabase-js'
 import type { DataChange, Row, Snapshot, SyncStatus } from '../shared/api'
-import { SYNC_TABLES } from '../shared/tables'
+import { SYNC_TABLES, SYNC_TABLE_NAMES, isSyncTable, type SyncTable } from '../shared/tables'
 import { push } from './ipc'
 
 // Enough for the debug window. Real screens will query what they show.
@@ -45,19 +45,20 @@ async function loadTable(table: string): Promise<void> {
 }
 
 export async function reloadAll(): Promise<void> {
-  await Promise.all(SYNC_TABLES.map(loadTable))
+  await Promise.all(SYNC_TABLE_NAMES.map(loadTable))
 }
 
-function sameRow(a: Row, b: Row): boolean {
-  return a.id !== undefined && a.id === b.id
+// Matches on the table's primary key; a delete only carries those columns.
+function sameRow(table: SyncTable, a: Row, b: Row): boolean {
+  return SYNC_TABLES[table].key.every((k) => a[k] !== undefined && a[k] === b[k])
 }
 
 function apply(payload: RealtimePostgresChangesPayload<Row>): void {
   const table = payload.table
   const current = snapshot[table]
-  if (!current) return
+  if (!isSyncTable(table) || !current) return
   const row = (payload.eventType === 'DELETE' ? payload.old : payload.new) as Row
-  let rows = current.rows.filter((r) => !sameRow(r, row))
+  let rows = current.rows.filter((r) => !sameRow(table, r, row))
   if (payload.eventType !== 'DELETE') rows = [row, ...rows]
   snapshot[table] = { ...current, rows }
   const change: DataChange = {
@@ -97,6 +98,6 @@ export async function stopSync(): Promise<void> {
   if (channel && db) await db.removeChannel(channel)
   channel = undefined
   snapshot = {}
-  for (const table of SYNC_TABLES) push('sync:table', { table, state: { rows: [] } })
+  for (const table of SYNC_TABLE_NAMES) push('sync:table', { table, state: { rows: [] } })
   setStatus({ connection: 'off' })
 }
