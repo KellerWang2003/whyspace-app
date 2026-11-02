@@ -2,9 +2,10 @@
 
 Whyspace's data lives in the Supabase project **General playground** (ref `swovjhbaoxlxodakauxo`, us-west-2). The tables are in `public`, next to the unrelated `thread_playground_projects` table, which they don't touch.
 
+The live project holds no demo data. It starts empty, and everything in it comes from real sign-ins and projects.
+
 - `supabase/migrations/`: the schema, RLS, triggers and RPCs. Both files are already applied to the project, under the same version numbers.
-- `supabase/seed.sql`: demo data from the whyspace-wireframe prototype (Whiskr and AI Studio · Recall). It's safe to re-run.
-- `supabase/tests/rls_check.sql`: access-rule checks. They run in one transaction and roll back.
+- `supabase/tests/rls_check.sql`: 28 access-rule checks. They load the Whiskr demo data (`supabase/tests/demo_data.sql`) inside one transaction and roll everything back, so nothing is left behind. Run them on a local or branch database.
 - `src/shared/database.types.ts`: generated types for `createClient<Database>()`.
 
 ## Tables
@@ -49,13 +50,7 @@ Dashboard setup (done by hand, since it can't be done in SQL):
 
 Supabase's built-in mailer sends only a few emails an hour. That's fine for testing; add custom SMTP (for example Resend) before real users.
 
-To link your own sign-in to a demo person, sign in once and then run this in the SQL editor:
-
-```sql
-delete from profiles where user_id = (select id from auth.users where email = 'you@example.com');
-update profiles set user_id = (select id from auth.users where email = 'you@example.com')
-where id = md5('whyspace-seed:MC')::uuid; -- MC = Keller, CH = Christine, TR = Trevor, KL = Kelly, JK = Jordan
-```
+Your first sign-in creates your profile, and `create_project` makes your first project.
 
 ## Changing the schema
 

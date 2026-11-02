@@ -1,17 +1,15 @@
--- Demo data from the whyspace-wireframe prototype (src/data.ts, end of the Whiskr week).
--- Two projects: Whiskr (a swipe app for cats, 4 people) and AI Studio · Recall (2 people).
+-- Test-only demo data from the whyspace-wireframe prototype (src/data.ts, end of the Whiskr week):
+-- Whiskr (a swipe app for cats, 4 people) and AI Studio · Recall (2 people).
 -- "Today" in the prototype is Sun Oct 25 2026; times are Pacific.
 --
--- Safe to re-run: it deletes and recreates the two demo projects. Demo profiles are kept
--- (only their name and email are refreshed), so a real sign-in linked to one stays linked.
+-- The live project stays empty (Keller's call, Nov 2 2026). Don't run this file on its own
+-- against it: rls_check.sql loads it inside a transaction and rolls everything back.
 -- IDs are stable: sid('move') is the same uuid every run.
-
-begin;
 
 create or replace function pg_temp.sid(key text) returns uuid
 language sql immutable as $$ select md5('whyspace-seed:' || key)::uuid $$;
 
--- The seed runs without a signed-in user, so the stamping triggers keep the
+-- This loads without a signed-in user, so the stamping triggers keep the
 -- created_by / confirmed_by / completed_at values given below.
 
 delete from public.projects where id in (pg_temp.sid('whiskr'), pg_temp.sid('studio'));
@@ -380,5 +378,3 @@ insert into public.activity (project_id, profile_id, part_id, artifact_id, tool,
   (pg_temp.sid('whiskr'), pg_temp.sid('CH'), pg_temp.sid('whiskr/Brand'), null, null, 'Reviewed the week''s decisions', null, 'idle', '2026-10-24 17:00-07'),
   (pg_temp.sid('studio'), pg_temp.sid('MC'), pg_temp.sid('studio/Prototype'), pg_temp.sid('a15'), 'Claude', 'Recall feedback and source preview', 'Exploring citation states', 'active', '2026-10-25 14:00-07'),
   (pg_temp.sid('studio'), pg_temp.sid('JK'), pg_temp.sid('studio/Prototype'), pg_temp.sid('a16'), 'Cursor', 'Recall evaluation on three course PDFs', 'Scoring questions against sources', 'active', '2026-10-25 14:15-07');
-
-commit;

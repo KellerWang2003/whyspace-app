@@ -1,7 +1,11 @@
--- Access-rule checks. Run against a database with the seed loaded:
+-- Access-rule checks against the Whiskr demo data. Run from the repo root with psql:
 --   psql "$DATABASE_URL" -f supabase/tests/rls_check.sql
--- Everything runs in one transaction and is rolled back. Each check raises if it fails.
+-- It loads demo_data.sql, signs in test users, runs the checks and rolls everything back,
+-- so the database is left exactly as it was. Each check raises if it fails.
+-- Use a local or branch database: it briefly writes test rows to auth.users.
 begin;
+
+\ir demo_data.sql
 
 create or replace function pg_temp.sid(key text) returns uuid
 language sql immutable as $$ select md5('whyspace-seed:' || key)::uuid $$;

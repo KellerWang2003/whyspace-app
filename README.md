@@ -13,7 +13,7 @@ npm run dev
 
 ## Lab parts to replace
 
-- `src/main/db.ts` (sql.js local file) and `server/blob-store.ts` (Vercel Blob): replaced by Supabase (schema, RLS, seed and types are in; see `docs/backend.md`)
+- `src/main/db.ts` (sql.js local file) and `server/blob-store.ts` (Vercel Blob): replaced by Supabase (schema, RLS and types are in; see `docs/backend.md`)
 - The secret MCP URL and the `x-whyspace-app-token` header: replaced by per-user sign-in
 - `src/main/mcp.ts` (local MCP server) and the `mcp-remote` bridge: replaced by the hosted MCP server
 - Kept: `src/main/tools.ts` (tool definitions, store interface) and `docs/what-claude-sees.md`
