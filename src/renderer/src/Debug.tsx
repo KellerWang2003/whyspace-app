@@ -19,20 +19,16 @@ function SignIn({
   auth: Extract<AuthState, { status: 'signed_out' }>
 }): React.JSX.Element {
   const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
-  const run = async (action: () => Promise<void>): Promise<void> => {
-    setBusy(true)
-    await action()
-    setBusy(false)
-  }
   return (
     <section className="box">
       <h2>Sign in</h2>
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault()
-          run(() => api.invoke('auth:email-link', email))
+          setBusy(true)
+          await api.invoke('auth:email-link', email)
+          setBusy(false)
         }}
       >
         <input
@@ -45,22 +41,11 @@ function SignIn({
         <button disabled={busy}>Email me a sign-in link</button>
       </form>
       {auth.emailSentTo && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            run(() => api.invoke('auth:email-code', auth.emailSentTo!, code))
-          }}
-        >
-          <p>Sent to {auth.emailSentTo}. Click the link in the email, or type the code from it.</p>
-          <input placeholder="123456" value={code} onChange={(e) => setCode(e.target.value)} />
-          <button disabled={busy || !code}>Use code</button>
-        </form>
+        <p>
+          Sent to {auth.emailSentTo}. Open the link on this Mac and it signs you in here. The first
+          link also creates your account.
+        </p>
       )}
-      <p>
-        <button disabled={busy} onClick={() => run(() => api.invoke('auth:google'))}>
-          Sign in with Google
-        </button>
-      </p>
       {auth.error && <p className="error">{auth.error}</p>}
     </section>
   )

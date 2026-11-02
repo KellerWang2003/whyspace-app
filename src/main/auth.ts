@@ -1,6 +1,6 @@
 // Sign-in and the Supabase session. The session lives here in the main process, never in a window,
 // so every window shares one sign-in and the tokens stay out of the renderer.
-import { app, powerMonitor, safeStorage, shell } from 'electron'
+import { app, powerMonitor, safeStorage } from 'electron'
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
@@ -10,7 +10,8 @@ import type { Database } from '../shared/database.types'
 const SUPABASE_URL = import.meta.env.MAIN_VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.MAIN_VITE_SUPABASE_PUBLISHABLE_KEY
 
-// Must be in Supabase's allowed redirect URLs (Authentication > URL configuration).
+// Sign-in is by email link only for now. The link comes back here, so this must be in
+// Supabase's allowed redirect URLs (Authentication > URL configuration).
 export const AUTH_CALLBACK = 'whyspace://auth/callback'
 
 // supabase-js keeps the session and the sign-in verifier here: one file in userData,
@@ -138,24 +139,7 @@ export async function sendEmailLink(email: string): Promise<void> {
   if (sent) signedOut(undefined, email)
 }
 
-// The same email carries a 6 digit code when the Supabase template includes {{ .Token }}.
-export async function verifyEmailCode(email: string, code: string): Promise<void> {
-  await run((db) => db.auth.verifyOtp({ email, token: code.trim(), type: 'email' }))
-}
-
-// Opens Google in the default browser. It comes back through whyspace://auth/callback.
-export async function signInWithGoogle(): Promise<void> {
-  await run(async (db) => {
-    const { data, error } = await db.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: AUTH_CALLBACK, skipBrowserRedirect: true }
-    })
-    if (data?.url) await shell.openExternal(data.url)
-    return { error }
-  })
-}
-
-// Handles whyspace://auth/callback?code=… from the email link or Google.
+// Handles whyspace://auth/callback?code=… from the email link.
 export async function finishSignIn(url: URL): Promise<void> {
   const params = new URLSearchParams(url.search || url.hash.slice(1))
   const failure = params.get('error_description') ?? params.get('error')

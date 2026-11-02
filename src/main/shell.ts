@@ -1,15 +1,6 @@
 // Wires sign-in, sync, links, the tray and the debug window together.
 import { handle, push } from './ipc'
-import {
-  authState,
-  finishSignIn,
-  sendEmailLink,
-  signInWithGoogle,
-  signOut,
-  startAuth,
-  supabase,
-  verifyEmailCode
-} from './auth'
+import { authState, finishSignIn, sendEmailLink, signOut, startAuth, supabase } from './auth'
 import { onSyncStatus, reloadAll, startSync, stopSync, syncSnapshot, syncStatus } from './sync'
 import { isAuthCallback, parseLink } from './links'
 import { createTray, updateTray } from './tray'
@@ -48,8 +39,6 @@ export function startShell(): void {
 
   handle('auth:state', authState)
   handle('auth:email-link', sendEmailLink)
-  handle('auth:email-code', verifyEmailCode)
-  handle('auth:google', signInWithGoogle)
   handle('auth:sign-out', signOut)
   handle('sync:snapshot', syncSnapshot)
   handle('sync:status', syncStatus)

@@ -43,8 +43,6 @@ export type WhyspaceLink =
 export interface Invokes {
   'auth:state': () => AuthState
   'auth:email-link': (email: string) => void
-  'auth:email-code': (email: string, code: string) => void
-  'auth:google': () => void
   'auth:sign-out': () => void
   'sync:snapshot': () => Snapshot
   'sync:status': () => SyncStatus
@@ -63,8 +61,6 @@ export interface Events {
 export const INVOKE_CHANNELS = [
   'auth:state',
   'auth:email-link',
-  'auth:email-code',
-  'auth:google',
   'auth:sign-out',
   'sync:snapshot',
   'sync:status',
