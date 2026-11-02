@@ -24,7 +24,9 @@ The app lives in the menu bar (tray) and opens a plain debug window: sign in, sy
 
 ## What changed from the lab
 
-- Gone from the app: the lab decisions window, its local sql.js store (with the sample "Tidewater Coffee" project), the local MCP server on port 3917, and the secret-URL client. The app reads Supabase as the signed-in user and starts empty.
+- Supabase replaces the lab's sql.js file and Vercel Blob store: schema, access rules and types are in `supabase/` and `src/shared/database.types.ts` (see `docs/backend.md`).
+- Gone from the app: the lab decisions window, its local store (with the sample "Tidewater Coffee" project), the local MCP server on port 3917, and the secret-URL client. The app reads Supabase as the signed-in user and starts empty.
+- Per-user sign-in replaces the secret MCP URL and the `x-whyspace-app-token` header.
 - Still here for the hosted MCP server (workstream 3) to port: `src/main/tools.ts` (tool definitions, store interface), `src/shared/decisions.ts`, `server/` and `docs/what-claude-sees.md`.
 
 `docs/` still holds the lab's plan and findings.
