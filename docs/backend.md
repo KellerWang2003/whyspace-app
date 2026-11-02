@@ -40,17 +40,13 @@ A few things are derived rather than stored. "Needs update" on reach means the r
 
 ## Sign-in
 
-Supabase Auth handles both methods: email (magic link or password) and Google. On sign-in, a trigger links the person to the profile invited under their email. If there is none, it creates a profile. A profile is claimed only after the email is confirmed (Google sign-ins arrive confirmed).
+Email only for now (Keller's call, Nov 2 2026). People sign in with a 6-digit code: the app calls `signInWithOtp({ email })`, then `verifyOtp({ email, token, type: 'email' })`. A new email is signed up automatically. Google sign-in isn't set up; add it later as an OAuth provider if it's wanted.
 
-Dashboard setup (done by hand, since it can't be done in SQL):
+On sign-in, a trigger links the person to the profile invited under their email. If there is none, it creates a profile. A profile is claimed only after the email is confirmed, which the code does. Your first sign-in creates your profile, and `create_project` makes your first project.
 
-1. Google Cloud console: create an OAuth client of type Web application. Set its redirect URI to `https://swovjhbaoxlxodakauxo.supabase.co/auth/v1/callback`.
-2. Supabase → Authentication → Sign In / Providers → Google: turn it on, then paste the client ID and secret.
-3. Supabase → Authentication → URL Configuration → Redirect URLs: add `whyspace://auth/callback` for the Electron app.
+Dashboard setup (done by hand, since it can't be done in SQL): Supabase sends a link by default, not a code. In Authentication → Emails → Templates, put `{{ .Token }}` in both **Confirm signup** (a new person's first sign-in) and **Magic link** (every later sign-in).
 
-Supabase's built-in mailer sends only a few emails an hour. That's fine for testing; add custom SMTP (for example Resend) before real users.
-
-Your first sign-in creates your profile, and `create_project` makes your first project.
+The built-in mailer only sends to addresses on the Supabase org's team, and only a few emails an hour. The errors are `email_address_not_authorized` and `over_email_send_rate_limit`. Set up custom SMTP (for example Resend) before anyone outside the team signs in.
 
 ## Changing the schema
 
