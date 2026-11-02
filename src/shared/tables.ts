@@ -1,6 +1,11 @@
+import type { Database } from './database.types'
+
+type Tables = Database['public']['Tables']
+
 // Tables the app keeps in sync with Supabase, with the primary key columns used to match
 // live changes to rows. `live` tables are in the supabase_realtime publication; the others
-// only refresh on sign-in, reconnect or Reload.
+// only refresh on sign-in, reconnect or Reload. Typechecking fails if a name or key column
+// isn't in the generated schema types.
 export const SYNC_TABLES = {
   projects: { key: ['id'], live: false },
   project_members: { key: ['project_id', 'profile_id'], live: false },
@@ -15,7 +20,9 @@ export const SYNC_TABLES = {
   meetings: { key: ['id'], live: true },
   inbox_items: { key: ['id'], live: true },
   activity: { key: ['project_id', 'profile_id'], live: true }
-} as const satisfies Record<string, { key: readonly string[]; live: boolean }>
+} as const satisfies {
+  [T in keyof Tables]?: { key: readonly (keyof Tables[T]['Row'])[]; live: boolean }
+}
 
 export type SyncTable = keyof typeof SYNC_TABLES
 

@@ -6,13 +6,14 @@ import type {
   SupabaseClient
 } from '@supabase/supabase-js'
 import type { DataChange, Row, Snapshot, SyncStatus } from '../shared/api'
+import type { Database } from '../shared/database.types'
 import { SYNC_TABLES, SYNC_TABLE_NAMES, isSyncTable, type SyncTable } from '../shared/tables'
 import { push } from './ipc'
 
 // Enough for the debug window. Real screens will query what they show.
 const ROW_LIMIT = 500
 
-let db: SupabaseClient | undefined
+let db: SupabaseClient<Database> | undefined
 let channel: RealtimeChannel | undefined
 let snapshot: Snapshot = {}
 let status: SyncStatus = { connection: 'off' }
@@ -37,10 +38,10 @@ function setStatus(next: SyncStatus): void {
   statusListener(status)
 }
 
-async function loadTable(table: string): Promise<void> {
+async function loadTable(table: SyncTable): Promise<void> {
   if (!db) return
   const { data, error } = await db.from(table).select('*').limit(ROW_LIMIT)
-  snapshot[table] = error ? { rows: [], error: error.message } : { rows: data as Row[] }
+  snapshot[table] = error ? { rows: [], error: error.message } : { rows: data as unknown as Row[] }
   push('sync:table', { table, state: snapshot[table] })
 }
 
@@ -72,7 +73,7 @@ function apply(payload: RealtimePostgresChangesPayload<Row>): void {
 }
 
 // Call when someone signs in. Safe to call again on token refresh; it only starts once.
-export async function startSync(client: SupabaseClient): Promise<void> {
+export async function startSync(client: SupabaseClient<Database>): Promise<void> {
   if (channel) return
   db = client
   setStatus({ connection: 'connecting' })

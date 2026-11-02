@@ -5,6 +5,7 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 import type { AuthState } from '../shared/api'
+import type { Database } from '../shared/database.types'
 
 const SUPABASE_URL = import.meta.env.MAIN_VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.MAIN_VITE_SUPABASE_PUBLISHABLE_KEY
@@ -59,11 +60,11 @@ class SessionFile {
   }
 }
 
-let client: SupabaseClient | undefined
+let client: SupabaseClient<Database> | undefined
 let state: AuthState = { status: 'loading' }
 let notify: (state: AuthState, session: Session | null) => void = () => {}
 
-export function supabase(): SupabaseClient | undefined {
+export function supabase(): SupabaseClient<Database> | undefined {
   return client
 }
 
@@ -87,7 +88,7 @@ export function startAuth(onChange: (state: AuthState, session: Session | null) 
     signedOut('Add MAIN_VITE_SUPABASE_URL and MAIN_VITE_SUPABASE_PUBLISHABLE_KEY to .env.local')
     return
   }
-  client = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  client = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
     auth: {
       flowType: 'pkce',
       storage: new SessionFile(),
@@ -122,7 +123,7 @@ export function startAuth(onChange: (state: AuthState, session: Session | null) 
 }
 
 async function run(
-  action: (db: SupabaseClient) => Promise<{ error: Error | null }>
+  action: (db: SupabaseClient<Database>) => Promise<{ error: Error | null }>
 ): Promise<boolean> {
   if (!client) return false
   const { error } = await action(client)
