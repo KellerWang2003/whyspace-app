@@ -2,6 +2,7 @@
 import { BrowserWindow, shell } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
+import icon from '../../resources/icon.png?asset'
 
 let win: BrowserWindow | undefined
 
@@ -18,6 +19,7 @@ export function openDebugWindow(): BrowserWindow {
     title: 'Whyspace debug',
     show: false,
     autoHideMenuBar: true,
+    ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -29,9 +31,9 @@ export function openDebugWindow(): BrowserWindow {
     return { action: 'deny' }
   })
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}#debug`)
+    win.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    win.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'debug' })
+    win.loadFile(join(__dirname, '../renderer/index.html'))
   }
   return win
 }

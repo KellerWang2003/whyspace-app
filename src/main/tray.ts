@@ -7,7 +7,6 @@ let tray: Tray | undefined
 
 interface TrayActions {
   openDebug: () => void
-  openLab: () => void
   signOut: () => void
 }
 
@@ -42,7 +41,6 @@ export function updateTray(auth: AuthState, sync: SyncStatus, actions: TrayActio
         : []),
       { type: 'separator' },
       { label: 'Open debug window', click: actions.openDebug },
-      { label: 'Open lab window', click: actions.openLab },
       { label: 'Sign out', enabled: auth.status === 'signed_in', click: actions.signOut },
       { type: 'separator' },
       { label: 'Quit Whyspace', role: 'quit' }

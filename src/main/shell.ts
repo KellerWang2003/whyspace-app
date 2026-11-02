@@ -39,10 +39,9 @@ export function openLink(raw: string): void {
 }
 
 // Call once after app ready.
-export function startShell(openLabWindow: () => void): void {
+export function startShell(): void {
   const actions = {
     openDebug: () => void openDebugWindow(),
-    openLab: openLabWindow,
     signOut: () => void signOut()
   }
   const refreshTray = (): void => updateTray(authState(), syncStatus(), actions)

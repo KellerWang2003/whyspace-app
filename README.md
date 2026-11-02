@@ -22,11 +22,9 @@ The app lives in the menu bar (tray) and opens a plain debug window: sign in, sy
 - Sign-in links come back as `whyspace://auth/callback`, which must be listed under Authentication > URL configuration > Redirect URLs in Supabase. Tables only stream live once they're in the `supabase_realtime` publication.
 - `whyspace://project/<id>` and `whyspace://decision/<id>` open the app and are passed to the window as `link:opened`.
 
-## Lab parts to replace
+## What changed from the lab
 
-- `src/main/db.ts` (sql.js local file) and `server/blob-store.ts` (Vercel Blob): replaced by Supabase
-- The secret MCP URL and the `x-whyspace-app-token` header: replaced by per-user sign-in
-- `src/main/mcp.ts` (local MCP server) and the `mcp-remote` bridge: replaced by the hosted MCP server
-- Kept: `src/main/tools.ts` (tool definitions, store interface) and `docs/what-claude-sees.md`
+- Gone from the app: the lab decisions window, its local sql.js store (with the sample "Tidewater Coffee" project), the local MCP server on port 3917, and the secret-URL client. The app reads Supabase as the signed-in user and starts empty.
+- Still here for the hosted MCP server (workstream 3) to port: `src/main/tools.ts` (tool definitions, store interface), `src/shared/decisions.ts`, `server/` and `docs/what-claude-sees.md`.
 
 `docs/` still holds the lab's plan and findings.

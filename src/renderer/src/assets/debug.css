@@ -1,7 +1,6 @@
 /* Plain on purpose: the debug window is plumbing, not a designed screen. */
-body:has(.debug) {
-  display: block;
-  overflow: auto;
+body {
+  margin: 0;
   background: Canvas;
   color: CanvasText;
   font:
