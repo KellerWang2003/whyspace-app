@@ -1,5 +1,6 @@
 import { app } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { createPill } from './pill'
 import { listenForLinks } from './links'
 import { openLink, startShell } from './shell'
 import { openDebugWindow } from './debug-window'
@@ -31,6 +32,7 @@ app.whenReady().then(() => {
 
   // Sign-in, sync and the menu-bar icon. No window opens on its own.
   startShell()
+  createPill()
 
   // Clicking the Dock icon opens the debug window, in case the menu-bar icon is hidden.
   app.on('activate', () => openDebugWindow())
