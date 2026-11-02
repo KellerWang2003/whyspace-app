@@ -20,7 +20,7 @@ app.whenReady().then(() => {
   if (!isPrimary) return
 
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('app.whyspace.desktop')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -29,10 +29,10 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // Sign-in, sync, tray and the debug window.
+  // Sign-in, sync and the menu-bar icon. No window opens on its own.
   startShell()
 
-  // Clicking the dock icon brings back the debug window.
+  // Clicking the Dock icon opens the debug window, in case the menu-bar icon is hidden.
   app.on('activate', () => openDebugWindow())
 })
 

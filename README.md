@@ -12,7 +12,9 @@ npm install
 npm run dev
 ```
 
-The app lives in the menu bar (tray) and opens a plain debug window: sign in, sync status, and the raw rows you can see.
+The app lives in the menu bar (tray). No window opens on its own: pick "Sign in…" or "Open debug window" from the menu-bar icon (or click the Dock icon) for a plain debug window with sign-in, sync status, and the raw rows you can see.
+
+On macOS, `npm run dev` runs a renamed copy of Electron (`node_modules/.dev-app/`, an APFS clone) so the Dock and menu bar say Whyspace instead of Electron.
 
 Only one copy runs at a time. To run a second checkout beside it, give it its own profile: `WHYSPACE_PROFILE=pill npm run dev` (it gets its own userData and sign-in).
 

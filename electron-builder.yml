@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: whyspace-lab
+appId: app.whyspace.desktop
+productName: Whyspace
 directories:
   buildResources: build
 files:
@@ -16,7 +16,7 @@ protocols:
 asarUnpack:
   - resources/**
 win:
-  executableName: whyspace-lab
+  executableName: whyspace
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

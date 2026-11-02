@@ -40,7 +40,10 @@ export function updateTray(auth: AuthState, sync: SyncStatus, actions: TrayActio
         ? [{ label: SYNC_LABEL[sync.connection], enabled: false }]
         : []),
       { type: 'separator' },
-      { label: 'Open debug window', click: actions.openDebug },
+      {
+        label: auth.status === 'signed_in' ? 'Open debug window' : 'Sign in…',
+        click: actions.openDebug
+      },
       { label: 'Sign out', enabled: auth.status === 'signed_in', click: actions.signOut },
       { type: 'separator' },
       { label: 'Quit Whyspace', role: 'quit' }

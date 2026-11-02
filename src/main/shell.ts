@@ -65,5 +65,4 @@ export function startShell(): void {
       refreshTray()
     })
   })
-  openDebugWindow()
 }
