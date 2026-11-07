@@ -10,6 +10,7 @@ import {
   type Rect
 } from '../../shared/pill'
 import { requestAccess, watchFrontmost } from './frontmost'
+import { onDecisions, pillDecisions, updateDecision } from './decisions'
 import { clampToScreen, loadPosition, savePosition, type Point } from './position'
 
 // The always-on-top pill: floats over other apps and full-screen spaces, expands to a
@@ -131,6 +132,7 @@ export function createPill(): void {
   ipcMain.handle('pill:init', (): PillInit => ({
     workArea: workArea(),
     context,
+    decisions: pillDecisions(),
     shortcut: SHORTCUT
   }))
   ipcMain.on('pill:interactive', (_, on: boolean) => {
@@ -140,6 +142,8 @@ export function createPill(): void {
   ipcMain.handle('pill:drag-end', dragEnd)
   ipcMain.on('pill:focus', () => pill?.focus())
   ipcMain.on('pill:request-access', requestAccess)
+  ipcMain.on('pill:update-decision', (_, id, patch) => updateDecision(id, patch))
+  const stopDecisions = onDecisions((list) => pill?.webContents.send('pill:decisions', list))
 
   pill = createWindow()
   pill.on('closed', () => (pill = undefined))
@@ -160,6 +164,7 @@ export function createPill(): void {
   })
   app.on('will-quit', () => {
     stop()
+    stopDecisions()
     globalShortcut.unregister(SHORTCUT)
   })
 }

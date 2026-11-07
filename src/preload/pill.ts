@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
-import type { FrontContext, PillApi, Rect } from '../shared/pill'
+import type { FrontContext, PillApi, PillDecision, Rect } from '../shared/pill'
 
 // Subscribes to one channel from the main process. Returns an unsubscribe function.
 function on<T extends unknown[]>(channel: string, callback: (...args: T) => void): () => void {
@@ -16,10 +16,12 @@ const pill: PillApi = {
   dragEnd: () => ipcRenderer.invoke('pill:drag-end'),
   focus: () => ipcRenderer.send('pill:focus'),
   requestAccess: () => ipcRenderer.send('pill:request-access'),
+  updateDecision: (id, patch) => ipcRenderer.send('pill:update-decision', id, patch),
   onShortcut: (callback) => on('pill:shortcut', callback),
   onBlur: (callback) => on('pill:blur', callback),
   onWorkArea: (callback) => on<[Rect]>('pill:workarea', callback),
-  onContext: (callback) => on<[FrontContext]>('pill:context', callback)
+  onContext: (callback) => on<[FrontContext]>('pill:context', callback),
+  onDecisions: (callback) => on<[PillDecision[]]>('pill:decisions', callback)
 }
 
 contextBridge.exposeInMainWorld('pill', pill)

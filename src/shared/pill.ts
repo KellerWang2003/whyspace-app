@@ -2,7 +2,7 @@
 
 // The collapsed pill and the expanded panel, in points.
 export const PILL = { width: 48, height: 112 }
-export const PANEL = { width: 288, height: 440 }
+export const PANEL = { width: 320, height: 440 }
 // Room around the panel for its shadow.
 export const MARGIN = 24
 
@@ -34,10 +34,26 @@ export interface FrontContext {
   access: 'granted' | 'needed'
 }
 
+// A decision the AI caught in a chat, waiting in the panel for the person to confirm.
+export interface PillDecision {
+  id: string
+  title: string
+  why?: string
+  // The reason is the AI's guess, not something the person said.
+  guessed?: boolean
+  // The person sounded unsure, so it stays open until they decide.
+  unsure?: boolean
+  confirmed: boolean
+}
+
+// Confirm, change the reason, or null to remove.
+export type DecisionPatch = Partial<Pick<PillDecision, 'why' | 'guessed' | 'confirmed'>> | null
+
 export interface PillInit {
   // The usable screen area around the pill, in the window's own coordinates.
   workArea: Rect
   context?: FrontContext
+  decisions: PillDecision[]
   shortcut: string
 }
 
@@ -50,8 +66,10 @@ export interface PillApi {
   dragEnd: () => Promise<{ moved: boolean }>
   focus: () => void
   requestAccess: () => void
+  updateDecision: (id: string, patch: DecisionPatch) => void
   onShortcut: (callback: () => void) => () => void
   onBlur: (callback: () => void) => () => void
   onWorkArea: (callback: (workArea: Rect) => void) => () => void
   onContext: (callback: (context: FrontContext) => void) => () => void
+  onDecisions: (callback: (decisions: PillDecision[]) => void) => () => void
 }

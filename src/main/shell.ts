@@ -13,6 +13,7 @@ import { onSyncStatus, reloadAll, startSync, stopSync, syncSnapshot, syncStatus 
 import { isAuthCallback, parseLink } from './links'
 import { createTray, updateTray } from './tray'
 import { openDebugWindow } from './debug-window'
+import { clearDecisions, loadTestDecisions, testDecisionsLoaded } from './pill/decisions'
 
 // Handles every whyspace:// link that listenForLinks hands over.
 export function openLink(raw: string): void {
@@ -41,7 +42,15 @@ export function openLink(raw: string): void {
 export function startShell(): void {
   const actions = {
     openDebug: () => void openDebugWindow(),
-    signOut: () => void signOut()
+    signOut: () => void signOut(),
+    testDecisions: {
+      loaded: testDecisionsLoaded,
+      toggle: () => {
+        if (testDecisionsLoaded()) clearDecisions()
+        else loadTestDecisions()
+        refreshTray()
+      }
+    }
   }
   const refreshTray = (): void => updateTray(authState(), syncStatus(), actions)
 

@@ -8,6 +8,8 @@ let tray: Tray | undefined
 interface TrayActions {
   openDebug: () => void
   signOut: () => void
+  // The pill's test decisions (Week 7 task 2), loaded or cleared from here.
+  testDecisions: { loaded: () => boolean; toggle: () => void }
 }
 
 const SYNC_LABEL: Record<SyncStatus['connection'], string> = {
@@ -45,6 +47,11 @@ export function updateTray(auth: AuthState, sync: SyncStatus, actions: TrayActio
         click: actions.openDebug
       },
       { label: 'Sign out', enabled: auth.status === 'signed_in', click: actions.signOut },
+      { type: 'separator' },
+      {
+        label: actions.testDecisions.loaded() ? 'Clear test decisions' : 'Load test decisions',
+        click: actions.testDecisions.toggle
+      },
       { type: 'separator' },
       { label: 'Quit Whyspace', role: 'quit' }
     ])
